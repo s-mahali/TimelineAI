@@ -21,6 +21,13 @@ const TimelineResponseSchema = z.object({
   events: z.array(TimelineEventSchema),
 });
 
+//Intent classification schema
+const IntentSchema = z.object({
+  intent: z.enum(["timeline", "general_chat"]).describe("User's intent"),
+  entity: z.string().optional().describe("Entity name if timeline intent"),
+  reasoning: z.string().describe("Brief explanation of classification"),
+});
+
 const gemini_key = process.env.GEMINI_API_KEY;
 if (!gemini_key) {
   throw new Error("gemini key not provided");
@@ -38,6 +45,7 @@ const llm = new ChatGoogleGenerativeAI({
 });
 
 const structuredLLM = llm.withStructuredOutput(TimelineResponseSchema);
+const intentLLM = llm.withStructuredOutput(IntentSchema);
 
 // Init Tavily client
 const tavilyClient = tavily({ apiKey: tavily_key });
@@ -51,7 +59,6 @@ const getImageUrl = async (query: string) => {
       maxResults: 1,
     });
 
-    // Get the first image from results
     const imageUrl = response.images?.[0];
 
     return (
@@ -64,11 +71,34 @@ const getImageUrl = async (query: string) => {
   }
 };
 
+// Classify user intent
+const classifyIntent = async (query: string) => {
+  const prompt = `Analyze this user query and determine the intent:
+Query: "${query}"
+
+Classify as:
+- "timeline": If user wants to see history, rise/fall, journey, evolution, timeline, or story of a person/company/entity
+- "general_chat": If user is greeting, asking general questions, or having casual conversation
+
+Examples:
+- "Show me the rise and fall of Nokia" → timeline
+- "How did Virat Kohli become what he is today" → timeline
+- "Tell me about the journey of Tesla" → timeline
+- "Hi" → general_chat
+- "How are you?" → general_chat
+- "What can you do?" → general_chat
+- current date is ${new Date().toISOString()}
+`;
 
 
-export const generateTimeline = async (query: string) => {
-  try {
-    const prompt = `Generate a timeline for: "${query}"
+  const result = await intentLLM.invoke(prompt);
+  console.log("🎯 Intent:", result);
+  return result;
+};
+
+// Generate timeline
+const generateTimelineData = async (query: string) => {
+  const prompt = `Generate a timeline for: "${query}"
 Include:
 - 5-6 historical events (past milestones, successes, failures)
 - 2-3 future predictions (realistic extrapolations)
@@ -77,21 +107,55 @@ For each event provide: year, title, description, sentiment, impact score (0-100
 For imageUrl, provide a specific descriptive search query that will help find relevant images (e.g., "Virat Kohli 2011 World Cup", "Nokia 3310 phone", "5G technology future").
 `;
 
-    const result = await structuredLLM.invoke(prompt);
+  const result = await structuredLLM.invoke(prompt);
 
-    // Enhance with real images from Tavily
-    const enhancedEvents = await Promise.all(
-      result.events.map(async (event) => ({
-        ...event,
-        imageUrl: await getImageUrl(event.imageUrl || event.title),
-      }))
-    );
+  // Enhance with real images
+  const enhancedEvents = await Promise.all(
+    result.events.map(async (event) => ({
+      ...event,
+      imageUrl: await getImageUrl(event.imageUrl || event.title),
+    }))
+  );
 
-    const finalResult = { ...result, events: enhancedEvents };
-    console.log("✅ Timeline Generated:", JSON.stringify(finalResult, null, 2));
-    return finalResult;
-  } catch (error) {
-    console.error("❌ Error:", error);
-  }
+  return { ...result, events: enhancedEvents };
 };
 
+// Handle general chat
+const handleGeneralChat = async (query: string) => {
+  const prompt = `You are a helpful AI assistant for a timeline generation service.
+User said: "${query}"
+
+Respond naturally and mention that you can help create timelines for people, companies, or events.
+Keep it brief and friendly.`;
+
+  const response = await llm.invoke(prompt);
+  console.log("content",response.content)
+  return {
+    type: "chat",
+    message: response.content,
+  };
+};
+
+export const generateTimeline = async (query: string) => {
+  try {
+    const intent = await classifyIntent(query);
+
+    if (intent.intent === "timeline") {
+      console.log("📊 Generating timeline...");
+      const timeline = await generateTimelineData(query);
+      console.log("✅ Timeline Generated");
+      return {
+        type: "timeline",
+        data: timeline,
+      };
+    } else {
+      console.log("💬 Handling general chat...");
+      const chat = await handleGeneralChat(query);
+      console.log("✅ Chat response generated");
+      return chat;
+    }
+  } catch (error) {
+    console.error("❌ Error:", error);
+    throw error;
+  }
+};

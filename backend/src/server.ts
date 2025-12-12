@@ -15,7 +15,7 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/chat", async (req, res) => {
-  const query: string = req.body.query;
+  const query: string = typeof req.body?.query === 'string' ? req.body.query.trim() : "";
   try {
     if (!query) {
       return res.status(400).json({
@@ -28,17 +28,17 @@ app.post("/chat", async (req, res) => {
     if (result) {
       return res.status(200).json({
         payload: result,
-        message: "✅ generated timeline successfully",
+        message: result.type === "timeline" ? "✅ generated timeline successfully":"✅ response generated",
         success: true,
       });
     } else {
-      return res.status(400).json({
+      return res.status(500).json({
         payload: null,
-        message: "Sorry, couldn't generate timeline data. Please try again 😇",
+        message: "Sorry, couldn't process your request. Please try again 😇",
         success: false,
       });    }
   } catch (error) {
-    console.log("❌ error while generating timeline", error);
+    console.log("❌ error while processing request", error);
     return res.status(500).json({
       payload: null,
       message: "❌ Internal server error",
