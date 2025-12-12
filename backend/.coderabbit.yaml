@@ -1,6 +1,3 @@
-profile: "chill"   
+profile: "chill"
 path_filters:
   - "!dist/**"
-  
-  
-     

@@ -73,8 +73,10 @@ const getImageUrl = async (query: string) => {
 
 // Classify user intent
 const classifyIntent = async (query: string) => {
+  // Basic sanitization to prevent prompt manipulation
+  const sanitizedQuery = query.replace(/["\n\r]/g, ' ').slice(0, 500);
   const prompt = `Analyze this user query and determine the intent:
-Query: "${query}"
+Query: "${sanitizedQuery}"
 
 Classify as:
 - "timeline": If user wants to see history, rise/fall, journey, evolution, timeline, or story of a person/company/entity
@@ -95,7 +97,6 @@ Examples:
   console.log("🎯 Intent:", result);
   return result;
 };
-
 // Generate timeline
 const generateTimelineData = async (query: string) => {
   const prompt = `Generate a timeline for: "${query}"
