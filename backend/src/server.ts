@@ -18,14 +18,13 @@ app.post("/chat", async (req, res) => {
   const query: string = req.body.query;
   try {
     if (!query) {
-      return res.status(401).json({
+      return res.status(400).json({
         payload: null,
         message: "Query is required",
         success: false,
       });
     }
-    const result = await generateTimeline(query);
-    console.log("result", result)
+    const result = await generateTimeline(query);    
     if (result) {
       return res.status(200).json({
         payload: result,
@@ -33,12 +32,11 @@ app.post("/chat", async (req, res) => {
         success: true,
       });
     } else {
-      return res.status(200).json({
-        payload: "Sorry, couldn't generated timeline data. Please try again 😇",
-        message: "✅ generated timeline successfully",
-        success: true,
-      });
-    }
+      return res.status(400).json({
+        payload: null,
+        message: "Sorry, couldn't generate timeline data. Please try again 😇",
+        success: false,
+      });    }
   } catch (error) {
     console.log("❌ error while generating timeline", error);
     return res.status(500).json({
