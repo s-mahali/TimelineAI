@@ -4,8 +4,10 @@ import type { TimelineEvent } from "../types/types"
 
 export const Footer = ({activeData} : {activeData : TimelineEvent[]}) =>{
 
+  console.log("activeData",activeData)
+
     return (
-              <div className="fixed top-8 left-8 z-50 pointer-events-none">
+              <div className="fixed top-18 right-9 z-50 pointer-events-none">
         <div className="bg-black/80 backdrop-blur border border-zinc-800 rounded-lg p-4 max-w-sm pointer-events-auto shadow-2xl">
           <h4 className="text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2">
             <ArrowRight className="w-4 h-4 text-blue-500"/> Quick Stats

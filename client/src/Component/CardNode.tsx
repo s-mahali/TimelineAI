@@ -7,9 +7,11 @@ const commonImage = "https://imgs.search.brave.com/3sNIqqoOSw67nu3Yb2695VgWero7O
 
 export function CardNode({ data }: { data: TimelineEvent }) {
   const isPrediction = data.type === "prediction";
+
+  console.log("isPrediction", data)
   
   return (
-    <div className="relative group w-[400px] bg-[#09090b] rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl transition-all duration-500 hover:shadow-blue-500/10 hover:border-zinc-600">
+    <div className="relative group w-[400px] h-[450px] bg-[#09090b] rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl transition-all duration-500 hover:shadow-blue-500/10 hover:border-zinc-600">
       
      
       <Handle type="target" position={Position.Left} className="opacity-0" />
@@ -28,7 +30,7 @@ export function CardNode({ data }: { data: TimelineEvent }) {
         </div>
 
         <img 
-          src={commonImage} 
+          src={data?.imageUrl?.url || commonImage} 
           alt={data.title} 
           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isPrediction ? 'grayscale opacity-70' : ''}`} 
         />
@@ -41,6 +43,10 @@ export function CardNode({ data }: { data: TimelineEvent }) {
                {data.type === 'prediction' ? 'Future Event' : 'Historical Event'}
             </span>
             {data.sentiment === 'positive' && <TrendingUp className="w-4 h-4 text-green-500" />}
+        </div>
+
+        <div className="text-green-500">
+          {data?.marketValue}
         </div>
 
         <h3 className="text-2xl font-bold text-white mb-3 leading-tight group-hover:text-blue-400 transition-colors">

@@ -8,7 +8,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { Search,  Loader2, Heart } from "lucide-react";
 import type { TimelineEvent } from "./types/types";
-import { KOHLI_DATA, NOKIA_DATA } from "./sample/dummydata";
+import {  NOKIA_DATA } from "./sample/dummydata";
 import { TimelineCanvas } from "./Component/Timeline";
 import { CardNode } from "./Component/CardNode";
 import { Footer } from "./Component/Footer";
@@ -21,7 +21,7 @@ import { Footer } from "./Component/Footer";
 export default function App() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeData, setActiveData] = useState<TimelineEvent[]>(KOHLI_DATA);
+  const [activeData, setActiveData] = useState<TimelineEvent[]>(NOKIA_DATA);
   const [topic, setTopic] = useState("Virat Kohli");
 
   const {getData} = useApiCalls();
@@ -39,12 +39,17 @@ export default function App() {
         setActiveData(NOKIA_DATA);
         setTopic("The Rise & Fall of Nokia");
       } else {
-        setActiveData(KOHLI_DATA);
+       
         setTopic(query);
       }
       setLoading(false);
     }, 1000);
   };
+
+  let data = useApiCalls((state) => state.data);
+  
+
+  console.log("data", data);
 
   return (
    
@@ -80,6 +85,8 @@ export default function App() {
  
         <button 
           type="submit"
+          disabled={loading}
+       
           className="mx-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-xs font-medium rounded-md text-white transition-colors border border-white/5 flex items-center gap-2"
         >
           Generate
@@ -101,12 +108,12 @@ export default function App() {
  
       <div className="flex-1 w-full h-full">
         <ReactFlowProvider>
-          <TimelineCanvas events={activeData} searchQuery={query} />
+          <TimelineCanvas events={data ? data : activeData } searchQuery={query} />
         </ReactFlowProvider>
       </div>
 
     
-     <Footer activeData={activeData} />
+     <Footer activeData={data ? data : activeData} />
 
     </div>
   );

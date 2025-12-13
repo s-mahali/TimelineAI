@@ -1,9 +1,18 @@
+ 
 export type TimelineEvent = {
-  id: string;
-  year: number;
-  title: string;
-  url? : string;
-  description: string;
-  type: "historical" | "prediction";
-  sentiment: "positive" | "negative" | "neutral";
-};
+  id: string
+  year: number
+  title: string
+  description: string
+  type: "historical" | "prediction"
+  sentiment: "positive" | "negative" | "neutral"
+
+  marketValue?: string
+
+ 
+  imageUrl?: {
+    url: string
+  }
+  impactScore?: number
+  tags?: string[]
+}
