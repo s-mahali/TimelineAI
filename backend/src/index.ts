@@ -38,6 +38,8 @@ if (!tavily_key) {
   throw new Error("Tavily API key not provided");
 }
 
+console.log("Hello World!");
+
 // Init the LLM
 const llm = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash",

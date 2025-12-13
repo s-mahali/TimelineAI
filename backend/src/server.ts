@@ -5,7 +5,10 @@ import { generateTimeline } from ".";
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin : "http://localhost:5173",
+
+}));
 
 app.get("/health", (req, res) => {
   res.json({
@@ -16,6 +19,8 @@ app.get("/health", (req, res) => {
 
 app.post("/chat", async (req, res) => {
   const query: string = typeof req.body?.query === 'string' ? req.body.query.trim() : "";
+
+  console.log("🎯 Query:", query);
   try {
     if (!query) {
       return res.status(400).json({
