@@ -6,13 +6,21 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = [
+const allowedOrigins =  [
   "http://localhost:5173",
-  "https://timeline-seedhecode.vercel.app/",
-  "https://timelineai-eta.vercel.app/"
+  "https://timeline-seedhecode.vercel.app",
+  "https://timelineai-eta.vercel.app"
 ]
 app.use(cors({
-  origin: allowedOrigins
+  origin: (origin, callback) => {
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.includes(origin)){
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"))
+  },
+  methods: ["GET", "POST"]
 }));
 
 
