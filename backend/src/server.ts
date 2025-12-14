@@ -5,8 +5,14 @@ import { generateTimeline, generateTimelineStream } from "./index";
 const app = express();
 
 app.use(express.json());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://timeline-seedhecode.vercel.app/",
+  "https://timelineai-eta.vercel.app/"
+]
 app.use(cors({
-  origin : process.env.NODE_ENV === "production" ? ""  : "http://localhost:5173",
+  origin: allowedOrigins
 }));
 
 
